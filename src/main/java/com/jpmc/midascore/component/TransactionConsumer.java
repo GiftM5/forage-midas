@@ -1,8 +1,9 @@
 package com.jpmc.midascore.component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jpmc.midascore.entity.TransactionRecord;
 import com.jpmc.midascore.foundation.Transaction;
+import com.jpmc.midascore.component.TransactionConduit;
+import com.jpmc.midascore.entity.TransactionRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +17,7 @@ public class TransactionConsumer {
         this.conduit = conduit;
     }
 
-    @KafkaListener(topics = "transactions", groupId = "midas")
+    @KafkaListener(topics = "${general.kafka-topic}", groupId = "midas")
     public void listen(String message) {
         try {
             Transaction transaction = objectMapper.readValue(message, Transaction.class);
@@ -26,6 +27,7 @@ public class TransactionConsumer {
                     transaction.getAmount()
             );
             conduit.save(record);
+            // Set a breakpoint here during debug to inspect transactions!
         } catch (Exception e) {
             e.printStackTrace();
         }
